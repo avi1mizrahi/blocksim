@@ -1,5 +1,6 @@
 import random
 import itertools
+from collections import deque
 from blocksim.utils import time
 
 
@@ -191,20 +192,16 @@ class Chain:
             return False
 
     def get_blockhashes_from_hash(self, block_hash, max_num):
-        """Get blockhashes starting from a hash and going backwards"""
+        """Get blockhashes starting from a hash and going forwards"""
         block = self.get_block(block_hash)
         if block is None:
             return []
 
-        header = block.header
-        hashes = []
-        hashes.append(block.header.hash)
-        for i in range(max_num - 1):  # We already have one block added to the hashes list
-            block = self.get_block(header.prevhash)
-            if block is None:
-                break
-            header = block.header
-            hashes.append(header.hash)
-            if header.number == 0:
-                break
-        return hashes
+        q = deque(maxlen=max_num)
+
+        i_block = self.head
+        while i_block != block:
+            q.append(i_block.header.hash)
+            i_block = self.get_block(i_block.header.prevhash)
+        q.append(i_block.header.hash)
+        return q
