@@ -86,6 +86,7 @@ def run_model():
 
     report_node_chain(world, nodes_list)
     write_report(world)
+    return world, nodes_list
 
 
 if __name__ == '__main__':

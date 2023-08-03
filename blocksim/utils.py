@@ -3,16 +3,10 @@ from datetime import datetime
 import random
 from ast import literal_eval as make_tuple
 import scipy.stats
-try:
-    from Crypto.Hash import keccak
+from hashlib import sha3_256
 
-    def keccak_256(value):
-        return keccak.new(digest_bits=256, data=value).digest()
-except ImportError:
-    import sha3 as _sha3
-
-    def keccak_256(value):
-        return _sha3.keccak_256(value).digest()
+def keccak_256(value):
+    return sha3_256(value).digest()
 
 
 def get_latency_delay(env, origin: str, destination: str, n=1):

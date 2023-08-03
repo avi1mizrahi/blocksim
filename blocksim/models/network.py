@@ -1,4 +1,5 @@
 import scipy
+import numpy
 from simpy import Store
 from blocksim.utils import get_random_values, time, get_latency_delay
 
@@ -49,15 +50,15 @@ class Network:
                 self.env.delays['time_between_blocks_seconds'])[0], 2)
             yield self.env.timeout(time_between_blocks)
             orphan_blocks_probability = self.env.config[self.blockchain]['orphan_blocks_probability']
-            simulate_orphan_blocks = scipy.random.choice(
+            simulate_orphan_blocks = numpy.random.choice(
                 [True, False], 1, p=[orphan_blocks_probability, 1-orphan_blocks_probability])[0]
             if simulate_orphan_blocks:
-                selected_nodes = scipy.random.choice(
+                selected_nodes = numpy.random.choice(
                     self._list_nodes, 2, replace=False, p=self._list_probabilities)
                 for selected_node in selected_nodes:
                     self._build_new_block(selected_node)
             else:
-                selected_node = scipy.random.choice(
+                selected_node = numpy.random.choice(
                     self._list_nodes, 1, replace=False, p=self._list_probabilities)[0]
                 self._build_new_block(selected_node)
 
