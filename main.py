@@ -1,6 +1,11 @@
 import time
 import os
+import random
+
 from json import dumps as dump_json
+
+import networkx as nx
+
 from blocksim.world import SimulationWorld
 from blocksim.node_factory import NodeFactory
 from blocksim.transaction_factory import TransactionFactory
@@ -53,21 +58,28 @@ def run_model():
 
     miners = {
         'Ohio': {
-            'how_many': 0,
+            'how_many': 5,
             'mega_hashrate_range': "(20, 40)"
         },
         'Tokyo': {
             'how_many': 2,
             'mega_hashrate_range': "(20, 40)"
-        }
-    }
-    non_miners = {
-        'Tokyo': {
-            'how_many': 1
         },
         'Ireland': {
-            'how_many': 1
-        }
+            'how_many': 2,
+            'mega_hashrate_range': "(20, 40)"
+        },
+    }
+    non_miners = {
+        'Ohio': {
+            'how_many': 50,
+        },
+        'Tokyo': {
+            'how_many': 50,
+        },
+        'Ireland': {
+            'how_many': 50,
+        },
     }
 
     node_factory = NodeFactory(world, network)
@@ -75,9 +87,12 @@ def run_model():
     nodes_list = node_factory.create_nodes(miners, non_miners)
     # Start the network heartbeat
     world.env.process(network.start_heartbeat())
-    # Full Connect all nodes
-    for node in nodes_list:
-        node.connect(nodes_list)
+
+    # Connect each to at least k peers
+    k=4
+    G = nx.connected_watts_strogatz_graph(len(nodes_list), 4, .3)
+    for u in G:
+        nodes_list[u].connect(nodes_list[v] for v in G[u])
 
     transaction_factory = TransactionFactory(world)
     transaction_factory.broadcast(100, 400, 15, nodes_list)
