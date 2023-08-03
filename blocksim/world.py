@@ -55,7 +55,8 @@ class SimulationWorld:
             'end_simulation_time': datetime.utcfromtimestamp(end_simulation).strftime('%m-%d %H:%M:%S'),
             'created_transactions': 0,
             'tx_propagation': {},
-            'block_propagation': {}
+            'block_propagation': {},
+            'block_headers': {},
         }
 
     @property

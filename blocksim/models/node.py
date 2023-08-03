@@ -58,6 +58,8 @@ class Node:
                 # Set the bases to monitor the block & TX propagation
                 self.env.data['block_propagation'].update({
                     f'{self.address}_{node.address}': {}})
+                self.env.data['block_headers'].update({
+                    f'{self.address}_{node.address}': []})
                 self.env.data['tx_propagation'].update({
                     f'{self.address}_{node.address}': {}})
 
@@ -158,6 +160,9 @@ class Node:
         # Perform block validation before sending
         # For Ethereum it performs validation when receives the header:
         if msg['id'] == 'block_headers':
+            flow = f'{self.address}_{destination_address}'
+            self.env.data['block_headers'][flow].append(len(msg['block_headers']))
+
             for header in msg['block_headers']:
                 delay = self.consensus.validate_block()
                 yield self.env.timeout(delay)
