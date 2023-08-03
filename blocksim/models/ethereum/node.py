@@ -190,8 +190,12 @@ class ETHNode(Node):
             if self.chain.get_block(block_hash) is None:
                 block_numbers.append(block_number)
         lowest_block_number = min(block_numbers)
+
         self.request_headers(
-            lowest_block_number, len(new_blocks), envelope.origin.address)
+            min(lowest_block_number, self.chain.head.header.number+1),
+            50,
+            envelope.origin.address
+        )
 
     def request_headers(self, block_number: int, max_headers: int, destination_address: str):
         """Request a node (identified by the `destination_address`) to return block headers.
@@ -208,6 +212,7 @@ class ETHNode(Node):
         block_hash = self.chain.get_blockhash_by_number(block_number)
         block_hashes = self.chain.get_blockhashes_from_hash(
             block_hash, max_headers)
+
         block_headers = []
         for _block_hash in block_hashes:
             block_header = self.chain.get_block(_block_hash).header
