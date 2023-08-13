@@ -56,7 +56,9 @@ class SimulationWorld:
             'created_transactions': 0,
             'tx_propagation': {},
             'block_propagation': {},
-            'block_headers': {},
+            'new_blocks_size': {},
+            'get_headers_size': {},
+            'block_headers_size': {},
         }
 
     @property
@@ -73,6 +75,11 @@ class SimulationWorld:
 
     def start_simulation(self):
         end = self._initial_time + self._sim_duration
+        self._env.run(until=end)
+
+    def simulate_fraction(self, i, out_of):
+        duration = self._sim_duration / out_of
+        end = self._initial_time + duration*(i+1)
         self._env.run(until=end)
 
     def _set_configs(self):

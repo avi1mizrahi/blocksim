@@ -24,7 +24,7 @@
     },
     "time_between_blocks_seconds": {
       "name": "lognorm",
-      "parameters": "(0.5, 6.0, 8.0)"
+      "parameters": "(0.5, 30.0, 8.0)"
     }
   }
 }

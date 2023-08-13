@@ -58,7 +58,11 @@ class Node:
                 # Set the bases to monitor the block & TX propagation
                 self.env.data['block_propagation'].update({
                     f'{self.address}_{node.address}': {}})
-                self.env.data['block_headers'].update({
+                self.env.data['block_headers_size'].update({
+                    f'{self.address}_{node.address}': []})
+                self.env.data['get_headers_size'].update({
+                    f'{self.address}_{node.address}': []})
+                self.env.data['new_blocks_size'].update({
                     f'{self.address}_{node.address}': []})
                 self.env.data['tx_propagation'].update({
                     f'{self.address}_{node.address}': {}})
@@ -157,11 +161,15 @@ class Node:
         origin_node = active_connection.origin_node
         destination_node = active_connection.destination_node
 
+        if msg['id'] == 'get_headers':
+            flow = f'{self.address}_{destination_address}'
+            self.env.data['get_headers_size'][flow].append(msg['size'])
+
         # Perform block validation before sending
         # For Ethereum it performs validation when receives the header:
         if msg['id'] == 'block_headers':
             flow = f'{self.address}_{destination_address}'
-            self.env.data['block_headers'][flow].append(len(msg['block_headers']))
+            self.env.data['block_headers_size'][flow].append(msg['size'])
 
             for header in msg['block_headers']:
                 delay = self.consensus.validate_block()
@@ -207,8 +215,9 @@ class Node:
                 blocks = {}
                 for block_hash in msg['new_blocks']:
                     blocks.update({f'{block_hash[:8]}': self.env.now})
-                self.env.data['block_propagation'][f'{origin_node.address}_{destination_node.address}'].update(
-                    blocks)
+                flow = f'{origin_node.address}_{destination_node.address}'
+                self.env.data['block_propagation'][flow].update(blocks)
+                self.env.data['new_blocks_size'][flow].append(msg['size'])
 
             upload_transmission_delay = get_sent_delay(
                 self.env, msg['size'], origin_node.location, destination_node.location)

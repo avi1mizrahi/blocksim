@@ -42,7 +42,7 @@ def report_node_chain(world, nodes_list):
 
 def run_model():
     now = int(time.time())  # Current time
-    duration = 3600  # seconds
+    duration = 6*3600  # seconds
 
     world = SimulationWorld(
         duration,
@@ -56,30 +56,21 @@ def run_model():
     # Create the network
     network = Network(world.env, 'NetworkXPTO')
 
+    locations = ['Ohio', 'Tokyo', 'Ireland']
+
+    miners_ratios = [.1, .01, .14]
+    total_nodes  = 3000
+
     miners = {
-        'Ohio': {
-            'how_many': 5,
+        location : {
+            'how_many': int(total_nodes//len(locations)*miners_ratio),
             'mega_hashrate_range': "(20, 40)"
-        },
-        'Tokyo': {
-            'how_many': 2,
-            'mega_hashrate_range': "(20, 40)"
-        },
-        'Ireland': {
-            'how_many': 2,
-            'mega_hashrate_range': "(20, 40)"
-        },
+        } for location,miners_ratio in zip(locations, miners_ratios) if miners_ratio>0
     }
     non_miners = {
-        'Ohio': {
-            'how_many': 50,
-        },
-        'Tokyo': {
-            'how_many': 50,
-        },
-        'Ireland': {
-            'how_many': 50,
-        },
+        location : {
+            'how_many': int(total_nodes//len(locations)*(1-miners_ratio)),
+        } for location,miners_ratio in zip(locations, miners_ratios)
     }
 
     node_factory = NodeFactory(world, network)
@@ -88,16 +79,24 @@ def run_model():
     # Start the network heartbeat
     world.env.process(network.start_heartbeat())
 
+    # shuffle nodes
+    # random.shuffle(nodes_list)
+
     # Connect each to at least k peers
     k=4
-    G = nx.connected_watts_strogatz_graph(len(nodes_list), 4, .3)
+    G = nx.connected_watts_strogatz_graph(len(nodes_list), k, .25)
     for u in G:
         nodes_list[u].connect(nodes_list[v] for v in G[u])
 
-    transaction_factory = TransactionFactory(world)
-    transaction_factory.broadcast(100, 400, 15, nodes_list)
+    print('AAAAAAAAA', nx.diameter(G))
 
-    world.start_simulation()
+    transaction_factory = TransactionFactory(world)
+
+    # world.start_simulation()
+    epochs = 10
+    for epoch in range(epochs):
+        transaction_factory.broadcast(100, 300, 15, nodes_list)
+        world.simulate_fraction(epoch, epochs)
 
     report_node_chain(world, nodes_list)
     write_report(world)
